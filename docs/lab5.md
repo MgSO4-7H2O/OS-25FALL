@@ -747,5 +747,11 @@ COW 的核心是，再将 `do_fork` 中分配页面、拷贝内容的操作后�
 
 验收环节将从以下问题中随机挑选几个作为考核标准：
 
+### 缺页异常处理
+1. 要求手动指定一个用户虚拟地址（例如，`USER_END - 0x10`），然后调用 `find_vma` 并展示返回的 VMA 结构体内容。打印`TEST=PFH1`的vma信息，要求`vm_flags`应该与elf头的信息相符。
+2. 运行Test=PFH1,`trap_handler`应该打印`scause`,`sepc`,`stval`寄存器，确认第一次pagefault应该是**指令缺页异常 (Instruction Page Fault, scause=12)**。并且打印`create_mapping`的具体映射和相应的权限。
+3. 完整运行 `make run TEST=PFH1`。`make run TEST=PFH2`。
+
+### fork机制
 1. 对应思考题 3 “为什么要为子进程 `pt_regs` 的 `sepc` 手动加四？”请通过 gdb 展示 `sepc` +4 前后的值变化。
 2. 对应思考题 2，使用 gdb 展示子进程/父进程的内核栈/用户栈指针（挑选其中1-2个）。
