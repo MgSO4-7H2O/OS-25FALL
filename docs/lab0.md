@@ -8,7 +8,6 @@
 
 ## 实验环境
 
-
 !!! tip "毕竟是交叉编译+使用 qemu，所以只要你配得起来跑得起来，任何环境都可以，只要按照要求提交能一键运行的代码即可"
 
 ### 使用Linux系统进行实验
@@ -26,9 +25,11 @@
 - [Ubuntu 24.04 LTS Windows Subsystem for Linux 2 - Microsoft Store](https://apps.microsoft.com/detail/9nz3klhxdjp5)
 - [Ubuntu 24.04 - Docker](https://hub.docker.com/layers/library/ubuntu/noble/images/sha256-77d57fd89366f7d16615794a5b53e124d742404e20f035c22032233f1826bd6a?context=explore)
 
-!!! tip "更换 ZJU Mirror 镜像源"
+!!! tip "更换镜像源"
 
     为了加快 APT 更新速度，建议同学们将 APT 镜像源更换到 [ZJU Mirror](https://mirrors.zju.edu.cn/docs/ubuntu/)。操作过程见相应页面的指南。
+
+    除了 ZJU Mirror，也有 [Ali Mirror](https://mirrors.aliyun.com/)、[Tsinghua Mirror](https://mirrors.tuna.tsinghua.edu.cn/)可供选择，选一个能用的设为APT源就行
 
 对于使用 MacOS 和 windows 进行实验的同学，也可以从 [docker官网](https://www.docker.com/get-started/) 下载对应的软件，使用镜像运行 Ubuntu 系统环境并配置相关的实验代码
 
