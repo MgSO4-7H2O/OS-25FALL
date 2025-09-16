@@ -823,17 +823,6 @@ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- <path/to/file(no suffix)>.i
     ```
     - 通过查看 [RISC-V Privileged Spec](https://github.com/riscv/riscv-isa-manual/releases/download/20240411/priv-isa-asciidoc.pdf) 中的 `medeleg` 和 `mideleg` 部分，解释上面 `MIDELEG` 和 `MEDELEG` 值的含义。
 
-## 实验任务与要求
-
-- 请各位同学独立完成作业，任何抄袭行为都将使本次作业判为 0 分。
-- 在学在浙大中提交：
-    - 整个工程代码的压缩包（提交之前请使用 `make clean` 清除所有构建产物）
-    - pdf 格式的实验报告：
-        - 记录实验过程并截图（4.1-4.3），并对每一步的命令以及结果进行必要的解释；
-        - 记录遇到的问题和心得体会；
-        - 完成思考题。
-
-!!! tip "关于实验报告内容要求，可见：[常见问题及解答 - 实验提交要求](faq.md#_2)"
 
 ## 验收标准
 
