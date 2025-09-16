@@ -51,6 +51,8 @@ INFO     -  [11:45:14] Serving on http://127.0.0.1:8000/os-25fall
 
 [NJU蒋炎炎OS实验](https://jyywiki.cn/OS/2025/)
 
-[助教私藏的OS2024全套实验(别跟老师讲)](https://github.com/JuniorSNy/zju-os-sld)
+(下面这俩有兴趣的自己做就好了，别跟老师提这玩意)
+
+[助教私藏的OS2024全套实验](https://github.com/JuniorSNy/zju-os-sld)
 
 [助教私藏的OS2023全套实验](https://github.com/JuniorSNy/os24fall-stu-full)
