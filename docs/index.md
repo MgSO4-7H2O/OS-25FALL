@@ -63,20 +63,16 @@ INFO     -  [11:45:14] Serving on http://127.0.0.1:8000/os-25fall
 
 ##### 技术手册
 
-
-1. [RISC-V 特权级手册](spec/riscv-privileged.html)
-2. [RISC-V 用户级手册](spec/riscv-unprivileged.html)
-3. [RISC-V ELF ABI 手册](spec/riscv-abi.pdf)
-4. [RISC-V SBI 手册](spec/riscv-sbi.pdf)
-5. [RISC-V 汇编手册](spec/riscv-asm.pdf)
-6. [RISC-V 汇编教程](https://riscv-programming.org/)
-7. [as 汇编器手册](https://sourceware.org/binutils/docs/as.html)
-8. [ld 链接器手册](https://sourceware.org/binutils/docs/ld.html)
-9. [binutils 工具集（objdump、readelf）手册](https://sourceware.org/binutils/docs/binutils.html)
-10. [gcc 编译器手册](https://gcc.gnu.org/onlinedocs/)
+1. [RISC-V 技术手册](https://riscv.atlassian.net/wiki/spaces/HOME/pages/16154769/RISC-V+Technical+Specifications)
+2. [RISC-V 汇编教程](https://riscv-programming.org/)
+3. [as 汇编器手册](https://sourceware.org/binutils/docs/as.html)
+4. [ld 链接器手册](https://sourceware.org/binutils/docs/ld.html)
+5. [binutils 工具集（objdump、readelf）手册](https://sourceware.org/binutils/docs/binutils.html)
+6.  [gcc 编译器手册](https://gcc.gnu.org/onlinedocs/)
 
 <!-- 往年实验仓库，有兴趣的可以提前推进度，~~别跟老师提~~
 
 [私藏的OS2024全套实验](https://github.com/JuniorSNy/zju-os-sld)
+[私藏的OS2023全套实验](https://github.com/JuniorSNy/os24fall-stu-full)
 
-[私藏的OS2023全套实验](https://github.com/JuniorSNy/os24fall-stu-full) -->
+ -->
