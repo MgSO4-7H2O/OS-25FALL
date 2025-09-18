@@ -46,9 +46,34 @@ INFO     -  [11:45:14] Serving on http://127.0.0.1:8000/os-25fall
 
 ## 最优质的链接
 
-[季江明、王海帅班课程实验 (TA:朱宝林、张恒斌)](https://zju-os.github.io/doc/)
+##### 操作系统实现&课程
 
-[NJU蒋炎炎OS实验](https://jyywiki.cn/OS/2025/)
+1. [季江明、王海帅班课程实验 (TA:朱宝林、张恒斌)](https://zju-os.github.io/doc/)
+2. [NJU蒋炎炎OS实验](https://jyywiki.cn/OS/2025/)
+3. [全国大学生操作系统比赛](https://github.com/oscomp)
+4. [rCore-Tutorial-Book](https://rcore-os.cn/rCore-Tutorial-Book-v3/)
+5. [开源操作系统学习与训练中心](https://github.com/LearningOS)
+
+##### Linux使用入门
+
+1. [The Missing Semester of Your CS Education](https://missing-semester-cn.github.io/2020/shell-tools)
+2. [GNU/Linux Command-Line Tools Summary](https://tldp.org/LDP/GNU-Linux-Tools-Summary/html/index.html)
+3. [Basics of UNIX](https://github.com/berkeley-scf/tutorial-unix-basics)
+4. [lec1: Shell 基础及 CLI 工具推荐 - 实用技能拾遗](https://slides.tonycrane.cc/PracticalSkillsTutorial/2023-fall-ckc/lec1/ )
+
+##### 技术手册
+
+
+1. [RISC-V 特权级手册](spec/riscv-privileged.html)
+2. [RISC-V 用户级手册](spec/riscv-unprivileged.html)
+3. [RISC-V ELF ABI 手册](spec/riscv-abi.pdf)
+4. [RISC-V SBI 手册](spec/riscv-sbi.pdf)
+5. [RISC-V 汇编手册](spec/riscv-asm.pdf)
+6. [RISC-V 汇编教程](https://riscv-programming.org/)
+7. [as 汇编器手册](https://sourceware.org/binutils/docs/as.html)
+8. [ld 链接器手册](https://sourceware.org/binutils/docs/ld.html)
+9. [binutils 工具集（objdump、readelf）手册](https://sourceware.org/binutils/docs/binutils.html)
+10. [gcc 编译器手册](https://gcc.gnu.org/onlinedocs/)
 
 <!-- 往年实验仓库，有兴趣的可以提前推进度，~~别跟老师提~~
 
