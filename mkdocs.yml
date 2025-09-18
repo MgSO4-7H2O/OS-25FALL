@@ -41,7 +41,7 @@ nav:
   - 常见问题及解答: faq.md
   - 附录A:spike使用: spike.md
   - 附录B:docker使用: docker.md
-  # - AIGC使用: aigc.md
+  - 附录C:AIGC使用: aigc.md
 
 
 markdown_extensions:
