@@ -538,4 +538,4 @@ int64_t fat32_lseek(struct file* file, int64_t offset, uint64_t whence) {
 
 ## 思考题
 
-本实验没有思考题和验收标准，加油
+本实验没有思考题和验收标准，能看到这里就已经很厉害了，加油
