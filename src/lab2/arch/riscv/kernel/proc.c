@@ -18,8 +18,16 @@ void task_init() {
     // 3. 由于 idle 不参与调度，可以将其 counter / priority 设置为 0
     // 4. 设置 idle 的 pid 为 0
     // 5. 将 current 和 task[0] 指向 idle
-
-    /* YOUR CODE HERE */
+    idle = (struct task_struct *)kalloc();
+    idle->state = TASK_RUNNING;
+    idle->counter = 0;
+    idle->priority = 0;
+    idle->pid = 0;
+    idle->thread.ra = (uint64_t)__dummy;
+    idle->thread.sp = (uint64_t)idle + PGSIZE;
+    current = idle;
+    task[0] = idle;
+    
 
     // 1. 参考 idle 的设置，为 task[1] ~ task[NR_TASKS - 1] 进行初始化
     // 2. 其中每个线程的 state 为 TASK_RUNNING, 此外，counter 和 priority 进行如下赋值：
@@ -29,8 +37,20 @@ void task_init() {
     //     - ra 设置为 __dummy（见 4.2.2）的地址
     //     - sp 设置为该线程申请的物理页的高地址
 
-    /* YOUR CODE HERE */
+    for (int i = 1; i < NR_TASKS; ++i) {
+        task[i] = (struct task_struct *)kalloc();
+        task[i]->state = TASK_RUNNING;
+        task[i]->counter = 0;
+        task[i]->priority = rand() % (PRIORITY_MAX - PRIORITY_MIN + 1) + PRIORITY_MIN;
+        task[i]->pid = i;
 
+        // 设置ra和sp
+        task[i]->thread.ra = (uint64_t)__dummy;
+        task[i]->thread.sp = (uint64_t)task[i] + PGSIZE;
+        #if TEST_SCHED
+            printk("INITIALIZE [PID = %d PRIORITY = %d COUNTER = %d]\n", task[i]->pid, task[i]->priority, task[i]->counter);
+        #endif    
+    }
     printk("...task_init done!\n");
 }
 
@@ -43,6 +63,7 @@ char expected_output[] = "2222222222111111133334222222222211111113";
 #endif
 
 void dummy() {
+    printk("call dummy for current PID %d\n", current->pid);
     uint64_t MOD = 1000000007;
     uint64_t auto_inc_local_var = 0;
     int last_counter = -1;
@@ -72,4 +93,67 @@ void dummy() {
             #endif
         }
     }
+}
+
+extern void __switch_to(struct task_struct *prev, struct task_struct *next);
+
+void switch_to(struct task_struct *next) {
+    // 如果下一个线程是同一个线程，无需处理
+    if (next == current) {
+        return;
+    }
+    // 线程切换
+    struct task_struct *prev = current;
+    current = next;
+    printk("Switch to [PID = %d PRIORITY = %d COUNTER = %d] from [PID = %d]\n", next->pid, next->priority, next->counter, prev->pid);
+    __switch_to(prev, next);
+    return;
+}
+
+void do_timer() {
+    // 1. 如果当前线程是 idle 线程或当前线程时间片耗尽则直接进行调度
+    // 2. 否则对当前线程的运行剩余时间减 1，若剩余时间仍然大于 0 则直接返回，否则进行调度
+    if (current == idle || current->counter <= 0) {
+        schedule();
+    } else {
+        --(current->counter);
+        if (current->counter > 0) {
+            return;
+        } else {
+            schedule();
+        }
+    }
+    return;
+}
+
+void schedule() {
+    // 参考Linux v0.11 调度算法代码
+    int max_counter;
+    int next_id;
+    int i;
+    struct task_struct **p;
+	while (1) {
+		max_counter = -1;
+		next_id = 0;
+		i = 0;
+		p = &task[0];
+        // 找到最大剩余时间的线程运行
+		while (++i < NR_TASKS) {
+			if (!*++p)
+				continue;
+			if ((*p)->state == TASK_RUNNING && (int)(*p)->counter > max_counter) {
+                max_counter = (int)(*p)->counter;
+                next_id = i;
+            }
+		}
+		if (max_counter) break;
+        // 所有线程counter都为0，令counter = priority
+		for(p = &task[1] ; p < &task[NR_TASKS] ; ++p) {
+            if (*p) {
+                (*p)->counter = ((*p)->counter >> 1) + (*p)->priority;
+                printk("SET [PID = %d PRIORITY = %d COUNTER = %d]\n", (*p)->pid, (*p)->priority, (*p)->counter);
+            }
+        }
+    }	
+	switch_to(task[next_id]);
 }
