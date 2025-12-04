@@ -1,5 +1,10 @@
 # Lab 4: RV64 用户态程序
 
+
+!!! tip "DDL"
+
+    寿黎但班DDL: 2025.12.07 23:55
+
 ## 实验目的
 
 * 创建**用户态进程**，并完成内核态与用户态的转换
@@ -260,9 +265,53 @@ for GNU/Linux 3.2.0, not stripped
 
 #### 修改 `_traps`
 
-同理，在 `_traps` 的首尾我们都需要做类似的操作，进入 trap 的时候需要切换到内核栈，处理完成后需要再切换回来。
+同理，在 `_traps` 的首尾我们都需要做类似的操作，进入 trap 的时候需要切换到内核栈，处理完成后需要再切换回来。但是与 `__dummy` 不太一样的是，`_traps` 的逻辑会需要处理从用户态和内核态的两种不同代码执行逻辑。
 
-注意如果是内核线程（没有用户栈）触发了异常，则不需要进行切换。（内核线程的 `sp` 永远指向的内核栈，且 `sscratch` 为 0）
+从用户态触发中断进入内核态时，此时进入 `_traps` 处的CPU状态是这样的：
+
+```
+                    ┌─────────────┬────────────────┐
+                    │ PC          │   _traps       │
+                    │ SP          │   USER_STACK   │
+                    │ SCRATCH     │   KERN_STACK   │
+                    └─────────────┴────────────────┘
+```
+
+此时的CPU栈指针指向用户态的栈空间，但是接下来的代码需要把所有的寄存器值存到内核栈顶部的 `pt_regs` 中，并且有一个隐含的条件是先暂时不能对用户栈空间进行写入操作，以免破坏用户侧的CPU上下文，因此需要利用例如`csrrw t0,sscratch,t0`的指令先把`sscratch`的寄存器内容换出到通用寄存器进行比对，确认先前是从用户态接收的中断/异常，再将指针指向正确的内核栈空间进行中断处理；
+
+```asm title="arch/riscv/kernel/entry.S"
+    .extern trap_handler
+    .section .text.entry
+    .align 2
+    .globl _traps 
+_traps:
+    csrrw t0,sscratch,t0
+    beqz t0,from_kern
+from_user:
+    csrrw t0,sscratch,t0
+    csrrw sp,sscratch,sp
+    addi sp,sp,-296
+    sd x0,0(sp)
+    ...
+from_kern:
+    csrrw t0,sscratch,t0
+    addi sp,sp,-296
+    sd x0,0(sp)
+    ...
+```
+
+处理完之后的寄存器内容应该如下所示
+
+
+```
+                    ┌─────────────┬────────────────┐
+                    │ PC          │   _traps+?     │
+                    │ SP          │   KERN_STACK   │
+                    │ SCRATCH     │   0            │
+                    └─────────────┴────────────────┘
+```
+
+注意如果是内核线程（没有用户栈）触发了异常，则在交换寄存器内容后发现 `sscratch` 原值就是0的话，就不需要进行切换。（内核线程的 `sp` 永远指向的内核栈，且 `sscratch` 为 0）
 
 #### 修改 `trap_handler`
 
