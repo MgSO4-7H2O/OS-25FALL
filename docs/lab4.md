@@ -286,18 +286,24 @@ for GNU/Linux 3.2.0, not stripped
     .globl _traps 
 _traps:
     csrrw t0,sscratch,t0
-    beqz t0,from_kern
-from_user:
+    beqz t0,from_kern 
+from_user: # if sscratch != 0
     csrrw t0,sscratch,t0
     csrrw sp,sscratch,sp
-    addi sp,sp,-296
+    csrrw t0,sscratch,t0
+    sd t0,-280(sp)
+    csrrw t0,sscratch,t0
+    csrw sscratch,zero
     ...
     j sd_trap_hdl
-from_kern:
+from_kern: # if sscratch == 0
     csrrw t0,sscratch,t0
+    sd sp,-280(sp)
 sd_trap_hdl:
     addi sp,sp,-296
-    sd x0,0(sp)
+    sd zero,0(sp)
+    sd ra,8(sp)
+    sd gp,24(sp)
     ...
 ```
 
