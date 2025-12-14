@@ -2,6 +2,7 @@
 #include "stdio.h"
 
 #define WAIT_TIME 0x4FFFFFFF
+#define SYS_CLONE 220
 
 static inline long getpid() {
     long ret;
