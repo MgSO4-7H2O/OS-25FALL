@@ -379,9 +379,40 @@ void do_page_fault(struct pt_regs *regs) {
             Err("[PID = %d], Page fault at 0x%lx : illegal access for scause = %d\n", current->pid, stval, scause);
             return;
         }
+
         // 合法缺页，创建映射
         uint64_t va = PGROUNDDOWN(stval);
 
+        // COW
+        if (scause == 15 && (vma->vm_flags & VM_WRITE)) {
+            uint64_t *pte_ptr = walk_page_table(current->pgd, va, 0);
+            if (pte_ptr && (*pte_ptr & PTE_V) && !(*pte_ptr & PTE_W)) {
+                uint64_t pa = PTE2PA(*pte_ptr);
+                void *old_kva = (void *)PA2VA(pa);
+                if (get_page_refcnt(old_kva) > 1) {
+                    // 多引用，分配新页，拷贝内容
+                    uint64_t new_kva = (uint64_t)alloc_page();
+                    uint64_t new_pa = new_kva - PA2VA_OFFSET;
+                    memcpy((void *)new_kva, old_kva, PGSIZE);
+                    // 创建页表项
+                    uint64_t perm = PTE_V | PTE_U;
+                    if (vma->vm_flags & VM_READ)  perm |= PTE_R;
+                    if (vma->vm_flags & VM_WRITE) perm |= PTE_W;
+                    if (vma->vm_flags & VM_EXEC)  perm |= PTE_X;
+                    *pte_ptr = PTE_FROM_PPN(PPN_OF(new_pa)) | perm;
+                    // 引用数-1
+                    put_page(old_kva);
+                    asm volatile("sfence.vma %0, zero" :: "r"(va) : "memory");
+                    Log("[PID = %d] COW at 0x%lx\n", current->pid, va);
+                    return;
+                } else {
+                    // 只有一个引用，恢复写权限
+                    *pte_ptr |= PTE_W;
+                    asm volatile("sfence.vma %0, zero" :: "r"(va) : "memory");
+                    return;
+                }
+            }
+        }
         // 分配一页
         uint64_t kva = (uint64_t)alloc_page();
         uint64_t pa = kva - PA2VA_OFFSET;
@@ -461,24 +492,44 @@ uint64_t do_fork(struct pt_regs *regs) {
         }
         mm->mmap = new_vma;
 
-        // 遍历vma页，如果有对应的页表项存在，深拷贝并映射
+        // 遍历vma页，如果有对应的页表项存在，refcnt++
         for (uint64_t va = vma->vm_start; va < vma->vm_end; va += PGSIZE) {
             uint64_t *pte_ptr = walk_page_table(current->pgd, va, 0);
             if (pte_ptr && (*pte_ptr & PTE_V)) {
-                // 分配新页，拷贝内容
-                uint64_t kva = (uint64_t)alloc_page();
-                uint64_t pa = kva - PA2VA_OFFSET;
-                memcpy((void *)kva, (void *)PA2VA(PTE2PA(*pte_ptr)), PGSIZE);
-                // 映射
+                // // 分配新页，拷贝内容
+                // uint64_t kva = (uint64_t)alloc_page();
+                // uint64_t pa = kva - PA2VA_OFFSET;
+                // memcpy((void *)kva, (void *)PA2VA(PTE2PA(*pte_ptr)), PGSIZE);
+                // // 映射
+                // uint64_t perm = PTE_V | PTE_U;
+                // if (vma->vm_flags & VM_READ)  perm |= PTE_R;
+                // if (vma->vm_flags & VM_WRITE) perm |= PTE_W;
+                // if (vma->vm_flags & VM_EXEC)  perm |= PTE_X;
+                // create_mapping(new_task->pgd, va, pa, PGSIZE, perm);
+
+                // 对应页表项存在且有效，引用数+1
+                uint64_t pa = PTE2PA(*pte_ptr);
+                void *old_kva = (void *)PA2VA(pa);
+                get_page(old_kva);
+
+                // 映射权限
                 uint64_t perm = PTE_V | PTE_U;
                 if (vma->vm_flags & VM_READ)  perm |= PTE_R;
-                if (vma->vm_flags & VM_WRITE) perm |= PTE_W;
                 if (vma->vm_flags & VM_EXEC)  perm |= PTE_X;
+
+                if (vma->vm_flags & VM_WRITE) {
+                    // 清除可写权限
+                    *pte_ptr &= ~PTE_W;
+                }
+
                 create_mapping(new_task->pgd, va, pa, PGSIZE, perm);
             }
         }
         vma = vma->vm_next;
     }
+    // 刷新TLB
+    asm volatile("sfence.vma zero, zero" ::: "memory");
+
     // 设置ra为__ret_from_fork
     new_task->thread.ra = (uint64_t)__ret_from_fork;
     // 设置ptregs
