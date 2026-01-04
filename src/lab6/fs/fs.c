@@ -68,6 +68,12 @@ int32_t file_open(struct file* file, const char* path, int flags) {
         file->read = fat32_read;
         file->fat32_file = fat32_open_file(path);
         // todo: check if fat32_file is valid (i.e. successfully opened) and return
+        if (file->fat32_file.cluster == 0) {
+            // 无效
+            return -1;
+        } else {
+            return 0;
+        }
     } else if (file->fs_type == FS_TYPE_EXT2) {
         printk(RED "Unsupport ext2\n" CLEAR);
         return -1;

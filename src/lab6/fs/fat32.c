@@ -214,6 +214,8 @@ int64_t fat32_write(struct file* file, const void* buf, uint64_t len) {
         memcpy(fat32_buf + offset, in + written, take);
         written += take;
         offset = 0;
+        // 写入磁盘
+        virtio_blk_write_sector(sector, fat32_buf);
         if (written < len) {
             cur_cluster = next_cluster(cur_cluster);
         }
