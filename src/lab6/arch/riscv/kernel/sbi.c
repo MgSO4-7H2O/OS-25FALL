@@ -67,6 +67,11 @@ struct sbiret sbi_set_timer(uint64_t stime_value) {
 struct sbiret sbi_debug_console_write_byte(uint8_t byte) {
     return sbi_ecall(0x4442434e, 0x2, byte, 0, 0, 0, 0, 0);
 }
+
+// 从终端读入字符
+struct sbiret sbi_debug_console_read(uint64_t num_bytes, uint64_t base_addr_lo, uint64_t base_addr_hi) {
+    return sbi_ecall(0x4442434e, 0x1, num_bytes, base_addr_lo, base_addr_hi, 0, 0, 0);
+}
 // 重置系统（关机或重启）
 struct sbiret sbi_system_reset(uint32_t reset_type, uint32_t reset_reason) {
     return sbi_ecall(0x53525354, 0x0, reset_type, reset_reason, 0, 0, 0, 0);

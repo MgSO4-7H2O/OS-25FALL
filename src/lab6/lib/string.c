@@ -16,3 +16,18 @@ void *memcpy(void *dst, void *src, uint64_t n) {
         cdst[i] = csrc[i];
     return dst;
 }
+int memcmp(const void *s1, const void *s2, uint64_t n) {
+    const unsigned char *a = (unsigned char *)s1;
+    const unsigned char *b = (unsigned char *)s2;
+    for (uint64_t i = 0; i < n; i++) {
+        if (a[i] != b[i]) return a[i] - b[i];
+    }
+    return 0;
+}
+
+int strlen(const char *str) {
+    int len = 0;
+    while (*str++)
+        len++;
+    return len;
+}

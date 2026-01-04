@@ -7,6 +7,7 @@
 #include "vm.h"
 #include "elf.h"
 #include "syscall.h"
+#include "fs.h"
 
 extern void __dummy();
 // user内存开始和结尾
@@ -111,6 +112,8 @@ void task_init() {
         task[i]->counter = 0;
         task[i]->priority = rand() % (PRIORITY_MAX - PRIORITY_MIN + 1) + PRIORITY_MIN;
         task[i]->pid = i;
+        // 创建文件表并保存
+        task[i]->files = file_init();
 
         // 设置ra和sp
         task[i]->thread.ra = (uint64_t)__dummy;
@@ -205,8 +208,8 @@ uint64_t do_mmap(struct mm_struct *mm, uint64_t addr, uint64_t len, uint64_t vm_
         vma->vm_prev = NULL;
         vma->vm_start = start;
         vma->vm_end = end;
-        printk(GREEN"do_mmap:" CLEAR);
-        printk("vma [%lx, %lx)\n", start, end);
+        // printk(GREEN"do_mmap:" CLEAR);
+        // printk("vma [%lx, %lx)\n", start, end);
         return start;
     }
 
@@ -229,8 +232,8 @@ uint64_t do_mmap(struct mm_struct *mm, uint64_t addr, uint64_t len, uint64_t vm_
         mm->mmap->vm_prev = vma;
     }
     mm->mmap = vma;
-    printk(GREEN"do_mmap:" CLEAR);
-    printk("vma [%lx, %lx)\n", start, end);
+    // printk(GREEN"do_mmap:" CLEAR);
+    // printk("vma [%lx, %lx)\n", start, end);
     return start;
 }
 
@@ -303,7 +306,7 @@ void switch_to(struct task_struct *next) {
     // 线程切换
     struct task_struct *prev = current;
     current = next;
-    printk(GREEN "Switch to [PID = %d PRIORITY = %d COUNTER = %d] from [PID = %d]\n" CLEAR, next->pid, next->priority, next->counter, prev->pid);
+    // printk(GREEN "Switch to [PID = %d PRIORITY = %d COUNTER = %d] from [PID = %d]\n" CLEAR, next->pid, next->priority, next->counter, prev->pid);
     __switch_to(prev, next);
     return;
 }
@@ -349,7 +352,7 @@ void schedule() {
 		for(p = &task[1] ; p < &task[nr_tasks] ; ++p) {
             if (*p) {
                 (*p)->counter = ((*p)->counter >> 1) + (*p)->priority;
-                printk("SET [PID = %d PRIORITY = %d COUNTER = %d]\n", (*p)->pid, (*p)->priority, (*p)->counter);
+                // printk("SET [PID = %d PRIORITY = %d COUNTER = %d]\n", (*p)->pid, (*p)->priority, (*p)->counter);
             }
         }
     }	

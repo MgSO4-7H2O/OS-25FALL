@@ -4,6 +4,7 @@
 #include "stdint.h"
 #include "defs.h"
 #include "stddef.h"
+#include "fs.h"
 
 #if TEST_SCHED
 #define NR_TASKS (1 + 8)    // 测试时线程数量
@@ -50,6 +51,7 @@ struct task_struct {
     struct thread_struct thread;
     uint64_t *pgd;  // 用户态页表
     struct mm_struct *mm; // 进程内存管理结构
+    struct files_struct *files; // 指向文件表的指针
 };
 
 struct vm_area_struct *find_vma(struct mm_struct *mm, uint64_t addr);

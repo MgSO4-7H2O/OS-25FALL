@@ -67,6 +67,7 @@ struct fat32_file fat32_open_file(const char *path);
 int64_t fat32_lseek(struct file* file, int64_t offset, uint64_t whence);
 int64_t fat32_write(struct file* file, const void* buf, uint64_t len);
 int64_t fat32_read(struct file* file, void* buf, uint64_t len);
+uint32_t fat32_file_size(struct file *file);
 
 #define FAT32_ENTRY_PER_SECTOR (VIRTIO_BLK_SECTOR_SIZE / sizeof(struct fat32_dir_entry))
 

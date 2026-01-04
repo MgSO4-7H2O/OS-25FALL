@@ -7,7 +7,39 @@
 
 struct files_struct *file_init() {
     // todo: alloc pages for files_struct, and initialize stdin, stdout, stderr
-    struct files_struct *ret = NULL;
+    // 根据files_struct大小分配一个页
+    struct files_struct *ret = (struct files_struct *)alloc_page();
+    memset(ret, 0, sizeof(struct files_struct));
+    // 为stdin, stdout, stderr赋值
+    // stdin, stdout, stderr对应的数组index分别是0, 1, 2
+    ret->fd_array[0].opened = 1;
+    ret->fd_array[0].perms = FILE_READABLE;
+    ret->fd_array[0].cfo = 0;
+    ret->fd_array[0].fs_type = 0;
+    ret->fd_array[0].lseek = NULL;
+    ret->fd_array[0].write = NULL;
+    ret->fd_array[0].read = stdin_read;
+
+    ret->fd_array[1].opened = 1;
+    ret->fd_array[1].perms = FILE_WRITABLE;
+    ret->fd_array[1].cfo = 0;
+    ret->fd_array[1].fs_type = 0;
+    ret->fd_array[1].lseek = NULL;
+    ret->fd_array[1].write = stdout_write;
+    ret->fd_array[1].read = NULL;
+
+    ret->fd_array[2].opened = 1;
+    ret->fd_array[2].perms = FILE_WRITABLE;
+    ret->fd_array[2].cfo = 0;
+    ret->fd_array[2].fs_type = 0;
+    ret->fd_array[2].lseek = NULL;
+    ret->fd_array[2].write = stderr_write;
+    ret->fd_array[2].read = NULL;
+
+    // 保证其他未使用的文件的opened字段为0
+    for (int i = 3; i < MAX_FILE_NUMBER; i++) {
+        ret->fd_array[i].opened = 0;
+    }  
     return ret;
 }
 

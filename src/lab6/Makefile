@@ -10,7 +10,8 @@ ABI		:=	lp64
 
 INCLUDE	:=	-I $(shell pwd)/include -I $(shell pwd)/arch/riscv/include
 CF		:=	-march=$(ISA) -mabi=$(ABI) -mcmodel=medany -fno-builtin -ffunction-sections -fdata-sections -nostartfiles -nostdlib -nostdinc -static -lgcc -Wl,--nmagic -Wl,--gc-sections -g -fno-pie 
-CFLAG	:=	$(CF) $(INCLUDE)
+LOG     := 1
+CFLAG	:=	$(CF) $(INCLUDE) -DLOG=$(LOG)
 
 TEST_SCHED  :=  0
 CFLAG   :=  $(CF) $(INCLUDE) -DTEST_SCHED=$(TEST_SCHED)
@@ -20,6 +21,7 @@ all: clean
 	$(MAKE) -C lib all
 	$(MAKE) -C init all
 	$(MAKE) -C user all
+	$(MAKE) -C fs all
 	$(MAKE) -C arch/riscv all
 	@echo -e '\n'Build Finished OK
 
@@ -35,6 +37,7 @@ clean:
 	$(MAKE) -C lib clean
 	$(MAKE) -C init clean
 	$(MAKE) -C user clean
+	$(MAKE) -C fs clean
 	$(MAKE) -C arch/riscv clean
 	$(shell test -f vmlinux && rm vmlinux)
 	$(shell test -f vmlinux.asm && rm vmlinux.asm)

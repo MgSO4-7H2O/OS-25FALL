@@ -3,6 +3,8 @@
     .extern _sbi_set_timer
     .extern mm_init
     .extern task_init
+    .extern virtio_dev_init
+    .extern mbr_init
     .extern early_pgtbl
     .extern setup_vm
     .extern setup_vm_final
@@ -32,6 +34,9 @@ _start:
 
     # 初始化线程
     call task_init
+
+    call virtio_dev_init
+    call mbr_init
 
     # 开启时钟中断，sie[STIE] 置 1
     li t0, (1 << 5)

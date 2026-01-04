@@ -4,7 +4,7 @@
 #include "mm.h"
 #include "string.h"
 #include "vm.h"
-
+#include "virtio.h"
 
 
 
@@ -73,6 +73,9 @@ void setup_vm_final() {
         create_mapping(swapper_pg_dir, writable_va_start, writable_pa_start, writable_sz, PTE_W | PTE_R);
     }
 
+    // 对 VritIO 外设的映射
+    create_mapping(swapper_pg_dir, io_to_virt(VIRTIO_START), VIRTIO_START, VIRTIO_SIZE * VIRTIO_COUNT, PTE_W | PTE_R | PTE_V);
+    
     // set satp with swapper_pg_dir
     uint64_t pgdir_pa = VA2PA((uint64_t)swapper_pg_dir);     // 获取物理页号
     uint64_t satp_val = SATP_MODE_SV39 | PPN_OF(pgdir_pa);   // MODE = 8 | PPN
@@ -145,8 +148,8 @@ void create_mapping(uint64_t *pgtbl, uint64_t va, uint64_t pa, uint64_t sz, uint
         uint64_t *pte_l0 = &l0_table_va[vpn0];
         *pte_l0 = PTE_FROM_PPN(PPN_OF(cur_pa)) | perm | PTE_V;
     }
-    printk(YELLOW"create_mapping: " CLEAR);
-    printk("va: %p, pa: %p, size: %p, perm: %p\n", va, pa, sz, perm);
+    // printk(YELLOW"create_mapping: " CLEAR);
+    // printk("va: %p, pa: %p, size: %p, perm: %p\n", va, pa, sz, perm);
     asm volatile("sfence.vma zero, zero");
     return;
 }
