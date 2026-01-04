@@ -193,10 +193,9 @@ __ret_from_fork:
     addi sp, sp, 264
 
     # 用户态切换
-    csrr t0, sscratch
-    beqz t0, smode_return
-    csrw sscratch, sp
-    mv sp, t0
+    csrrw sp, sscratch, sp
+    bnez sp, smode_return
+    csrrw sp, sscratch, t0
 
 smode_return:
     # 返回
