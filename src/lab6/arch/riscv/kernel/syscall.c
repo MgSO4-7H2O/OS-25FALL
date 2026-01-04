@@ -50,6 +50,24 @@ static int64_t sys_read(uint64_t fd, char *buf, uint64_t len) {
     return ret;
 }
 
+static int64_t sys_openat(const char *path, int flags) {
+    // 打开对应地址的文件
+    // 寻找第一个空闲的文件描述符
+    for (int i = 0; i < MAX_FILE_NUMBER; i++) {
+        if (!current->files->fd_array[i].opened) {
+            return file_open(&(current->files->fd_array[i]), path, flags) == 0 ? i : -1;
+        }
+    }
+    // 无可用的描述符，返回-1表示打开失败
+    return -1;
+}
+
+static int64_t sys_close(uint64_t fd) {
+    // 关闭对应文件
+    current->files->fd_array[fd].opened = 0;
+    return 0;
+}
+
 static int64_t sys_lseek(uint64_t fd, uint64_t offset, uint64_t whence) {
     int64_t ret;
     struct file *file = &(current->files->fd_array[fd]);
@@ -66,24 +84,6 @@ static int64_t sys_lseek(uint64_t fd, uint64_t offset, uint64_t whence) {
         ret = file->lseek(file, offset, whence);
     }
     return ret;
-}
-
-static int64_t sys_close(uint64_t fd) {
-    // 关闭对应文件
-    current->files->fd_array[fd].opened = 0;
-    return 0;
-}
-
-static int64_t sys_openat(const char *path, int flags) {
-    // 打开对应地址的文件
-    // 寻找第一个空闲的文件描述符
-    for (int i = 0; i < MAX_FILE_NUMBER; i++) {
-        if (!current->files->fd_array[i].opened) {
-            return file_open(&(current->files->fd_array[i]), path, flags) == 0 ? i : -1;
-        }
-    }
-    // 无可用的描述符，返回-1表示打开失败
-    return -1;
 }
 
 void syscall(struct pt_regs *regs) {
@@ -117,14 +117,14 @@ void syscall(struct pt_regs *regs) {
         case SYS_READ:
             regs->regs_32[10] = sys_read(regs->regs_32[10], (char*)regs->regs_32[11], regs->regs_32[12]);
             break;
-        case SYS_LSEEK:
-            regs->regs_32[10] = sys_lseek(regs->regs_32[10], regs->regs_32[11], regs->regs_32[12]);
+        case SYS_OPENAT:
+            regs->regs_32[10] = sys_openat((char*)regs->regs_32[11], regs->regs_32[12]);
             break;
         case SYS_CLOSE:
             regs->regs_32[10] = sys_close(regs->regs_32[10]);
             break;
-        case SYS_OPENAT:
-            regs->regs_32[10] = sys_openat((char*)regs->regs_32[11], regs->regs_32[12]);
+        case SYS_LSEEK:
+            regs->regs_32[10] = sys_lseek(regs->regs_32[10], regs->regs_32[11], regs->regs_32[12]);
             break;
         case SYS_GETPID:
             regs->regs_32[10] = current->pid;
