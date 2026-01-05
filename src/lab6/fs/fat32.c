@@ -170,16 +170,24 @@ int64_t fat32_read(struct file* file, void* buf, uint64_t len) {
     uint8_t *out = (uint8_t *)buf;
     uint64_t copied = 0;
     while (copied < len && cur_cluster < 0x0FFFFFF8) {
-        // 扫描文件所在的扇区并读
-        uint64_t sector = cluster_to_sector(cur_cluster);
+        // 获取簇起始扇区
+        uint64_t base_sector = cluster_to_sector(cur_cluster);
+
+        // 计算offset对应簇内哪个扇区
+        uint64_t sector_in_cluster = offset / VIRTIO_BLK_SECTOR_SIZE;
+        uint64_t offset_in_sector = offset % VIRTIO_BLK_SECTOR_SIZE;
         // 读扇区
-        virtio_blk_read_sector(sector, fat32_buf);
-        uint64_t take = bytes_per_cluster - offset;
+        virtio_blk_read_sector(base_sector + sector_in_cluster, fat32_buf);
+
+        uint64_t take = VIRTIO_BLK_SECTOR_SIZE - offset_in_sector;
         if (take > len - copied) take = len - copied;
-        memcpy(out + copied, fat32_buf + offset, take);
+
+        memcpy(out + copied, (uint8_t*)fat32_buf + offset_in_sector, take);
         copied += take;
-        offset = 0;
-        if (copied < len) {
+        offset += take;
+
+        if (offset >= bytes_per_cluster) {
+            offset -= bytes_per_cluster;
             cur_cluster = next_cluster(cur_cluster);
         }
     }
@@ -206,17 +214,26 @@ int64_t fat32_write(struct file* file, const void* buf, uint64_t len) {
     uint8_t *in = (uint8_t *)buf;
     uint64_t written = 0;
     while (written < len && cur_cluster < 0x0FFFFFF8) {
-        // 扫描文件所在的扇区并写
-        uint64_t sector = cluster_to_sector(cur_cluster);
-        virtio_blk_read_sector(sector, fat32_buf);
-        uint64_t take = bytes_per_cluster - offset;
+        // 获取簇起始扇区
+        uint64_t base_sector = cluster_to_sector(cur_cluster);
+
+        // 计算offset对应簇内哪个扇区
+        uint64_t sector_in_cluster = offset / VIRTIO_BLK_SECTOR_SIZE;
+        uint64_t offset_in_sector = offset % VIRTIO_BLK_SECTOR_SIZE;
+        // 读扇区
+        virtio_blk_read_sector(base_sector + sector_in_cluster, fat32_buf);
+
+        uint64_t take = VIRTIO_BLK_SECTOR_SIZE - offset_in_sector;
         if (take > len - written) take = len - written;
-        memcpy(fat32_buf + offset, in + written, take);
+
+        memcpy((uint8_t*)fat32_buf + offset_in_sector, in + written, take);
         written += take;
-        offset = 0;
+        offset += take;
         // 写入磁盘
-        virtio_blk_write_sector(sector, fat32_buf);
-        if (written < len) {
+        virtio_blk_write_sector(base_sector + sector_in_cluster, fat32_buf);
+
+        if (offset >= bytes_per_cluster) {
+            offset -= bytes_per_cluster;
             cur_cluster = next_cluster(cur_cluster);
         }
     }
